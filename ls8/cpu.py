@@ -6,6 +6,8 @@ HLT = 0b00000001
 PRN = 0b01000111
 LDI = 0b10000010
 MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
 class CPU:
     """Main CPU class."""
 
@@ -14,6 +16,7 @@ class CPU:
         self.ram = [0] * 256
         self.register = [0] * 8
         self.pc = 0
+        self.sp = 7
     
     def ram_read(self, address):
         return self.ram[address]
@@ -97,6 +100,7 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
+        self.register[self.sp] == 0xf4
         
         running = True
 
@@ -125,7 +129,28 @@ class CPU:
                 regB = operand_b
                 self.register[regA] = self.register[regA] * self.register[regB]
                 self.pc += 3
+            elif ir == PUSH:
+                #Decrement the `SP`.
+                self.register[self.sp] -= 1
+                #grab the value out of that given register
+                reg_num = operand_a
+                value = self.register[reg_num]
+
+                #copy value into register
+                self.ram[self.register[self.sp]] = value
+
+                self.pc += 2
+            elif ir == POP:
+                #value is top of stack address
+                value = self.ram[self.register[self.sp]]
+
+                # reg_num = operand_a
+                self.register[operand_a] = value
+
+                self.register[self.sp] += 1
+
+                self.pc += 2
             else:
-                print("Unknown instruction")
+                print("Unkown command!")
                 sys.exit(0)
 
