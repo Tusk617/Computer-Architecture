@@ -8,6 +8,7 @@ LDI = 0b10000010
 MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000
 class CPU:
     """Main CPU class."""
 
@@ -98,6 +99,22 @@ class CPU:
 
         print()
 
+    def push_v(value):
+        #decrement SP
+        self.register[self.sp] -= 1
+
+        #copy value onto stack
+        top_stack = self.register[self.sp]
+        value = self.ram[top_stack]
+    
+    def pop_v(value):
+
+        top_stack = self.register[self.sp]
+        value = self.ram[top_stack]
+
+        self.register[self.sp] += 1
+
+        return value
     def run(self):
         """Run the CPU."""
         self.register[self.sp] == 0xf4
