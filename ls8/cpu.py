@@ -9,6 +9,9 @@ MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
 CALL = 0b01010000
+RET = 0b00010001
+ADD = 0b10100000
+CMP = 0b10100111
 class CPU:
     """Main CPU class."""
 
@@ -18,6 +21,7 @@ class CPU:
         self.register = [0] * 8
         self.pc = 0
         self.sp = 7
+        self.fl = 0b00000000
     
     def ram_read(self, address):
         return self.ram[address]
@@ -53,22 +57,6 @@ class CPU:
             print(f"File not found!: {sys.argv[1]}")
             sys.exit(0)
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -99,7 +87,7 @@ class CPU:
 
         print()
 
-    def push_v(value):
+    def push_v(self, value):
         #decrement SP
         self.register[self.sp] -= 1
 
@@ -107,7 +95,7 @@ class CPU:
         top_stack = self.register[self.sp]
         value = self.ram[top_stack]
     
-    def pop_v(value):
+    def pop_v(self):
 
         top_stack = self.register[self.sp]
         value = self.ram[top_stack]
@@ -117,6 +105,7 @@ class CPU:
         return value
     def run(self):
         """Run the CPU."""
+        self.trace()
         self.register[self.sp] == 0xf4
         
         running = True
@@ -146,6 +135,11 @@ class CPU:
                 regB = operand_b
                 self.register[regA] = self.register[regA] * self.register[regB]
                 self.pc += 3
+            elif ir == ADD:
+                regA = operand_a
+                regB = operand_b
+                self.register[regA] = self.register[regA] + self.register[regB]
+                self.pc += 3
             elif ir == PUSH:
                 #Decrement the `SP`.
                 self.register[self.sp] -= 1
@@ -167,6 +161,35 @@ class CPU:
                 self.register[self.sp] += 1
 
                 self.pc += 2
+            elif ir == CALL:
+
+                returnAddy = self.pc + 2
+
+                self.push_v(returnAddy)
+
+                reg_num = self.ram[self.pc + 1]
+                subAddy = self.register[reg_num]
+
+                self.pc = subAddy
+            elif ir == RET:
+                returnAddy = self.pop_v()
+
+                self.pc = returnAddy
+            elif ir == CMP:
+                #need to update current flag status based on reg comparison
+                #first create the two registers to be compared
+                regA = operand_a
+                regB = operand_b
+                #next compare the values
+                #less than
+                if self.register[regA] < self.register[regB]:
+                    self.fl = 0b00000100
+                #greater than
+                elif self.register[regA] > self.register[regB]:
+                    self.fl = 0b00000010
+                #equal to
+                elif self.register[regA] == self.register[regB]:
+                    self.fl = 0b00000001
             else:
                 print("Unkown command!")
                 sys.exit(0)
