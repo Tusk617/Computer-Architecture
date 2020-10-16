@@ -12,6 +12,9 @@ CALL = 0b01010000
 RET = 0b00010001
 ADD = 0b10100000
 CMP = 0b10100111
+JMP = 0b01010100
+JNE = 0b01010110
+JEQ = 0b01010101
 class CPU:
     """Main CPU class."""
 
@@ -190,10 +193,26 @@ class CPU:
                 #equal to
                 elif self.register[regA] == self.register[regB]:
                     self.fl = 0b00000001
+                
+                self.pc += 3
             elif ir == JMP:
                 #need to update PC to the address stored in a given register
                 reg_num = operand_a
                 self.pc = self.register[reg_num]
+            elif ir == JEQ:
+                #if flagged as equal
+                if self.fl == 0b00000001:
+                    reg_num = operand_a
+                    self.pc = self.register[reg_num]
+                else:
+                    self.pc += 2
+            elif ir == JNE:
+                #if not equal
+                if self.fl != 0b00000001:
+                    reg_num = operand_a
+                    self.pc = self.register[reg_num]
+                else:
+                    self.pc += 2
             else:
                 print("Unkown command!")
                 sys.exit(0)
