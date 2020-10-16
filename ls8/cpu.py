@@ -190,6 +190,10 @@ class CPU:
                 #equal to
                 elif self.register[regA] == self.register[regB]:
                     self.fl = 0b00000001
+            elif ir == JMP:
+                #need to update PC to the address stored in a given register
+                reg_num = operand_a
+                self.pc = self.register[reg_num]
             else:
                 print("Unkown command!")
                 sys.exit(0)
